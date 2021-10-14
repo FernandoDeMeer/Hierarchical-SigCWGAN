@@ -1,0 +1,16 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# Exclude all .idea folders
+**/.idea/
+# except for the one in the root of the project that provides user-independent configurations
+!./.idea/
+
+#Exclude training files from commits 
+
+generated_data/
+
+#Exclude training data (due to copyright sharing issue)
+
+data/
