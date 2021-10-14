@@ -9,7 +9,7 @@
 
 #Exclude training files from commits 
 
-generated_data/
+#generated_data/
 
 #Exclude training data (due to copyright sharing issue)
 

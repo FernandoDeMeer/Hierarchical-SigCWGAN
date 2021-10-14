@@ -1,4 +1,5 @@
-﻿# Hierarchical GAN for large dimensional financial market data Implementation
+﻿
+# Hierarchical GAN for large dimensional financial market data Implementation
 
 This repository is an implementation of the [Hierarchical (Sig-Wasserstein) GAN] algorithm for large dimensional Time Series Generation.
 
@@ -18,7 +19,7 @@ This repository is an implementation of the [Hierarchical (Sig-Wasserstein) GAN]
 
 In order to train on a new dataset the following changes to the code are needed: 
 
-- Add your data file to **src/data** and a data pipeline to **data.py** with the name get_{}_dataset with {} being the name of your dataset. 
+- Create a folder **src/data**, add your data file with the name of your dataset and add a data pipeline to **data.py** with the name `get_{}_dataset` with {} being the name of your dataset. 
 
 - In **hyperparameters_hierarchicalgan.py** add an entry with the name of your dataset and the desired parameters to the following dictionaries:
   
@@ -26,15 +27,15 @@ In order to train on a new dataset the following changes to the code are needed:
   2. Base_SIGCWGAN_CONFIGS
   3. CrossDim_SIGCWGAN_CONFIGS
   
-All training results will be saved to *generated_data/{}/seed=i* with {} being the name of your dataset and as many seeds as specified.
+All training results will be saved to **generated_data/{}/seed=i** with {} being the name of your dataset and as many seeds as specified.
 
 ## Generating Scenarios
 
-Once a model has been trained the parser in *evaluate_hierarchical_gan.py* can be modified to load the trained model and generate scenarios via the function generate_series_hierarchical_gan.
+Once a model has been trained the parser in *evaluate_hierarchical_gan.py* can be modified to load the trained model and generate scenarios via the function `generate_series_hierarchical_gan`.
 
 ## Replicating results from the paper
 
-The data used in the first experiment are the closing prices from $03/05/2000$ to $07/05/2021$ (dd/mm/yyyy) of the continously rolled futures from Tables 2 and 4 in the paper. Due to copyright sharing issues we are not able to share the datasets but we do include the trained models in  **src/generated_data**.
+The data used in the first experiment are the closing prices from $03/05/2000$ to $07/05/2021$ (dd/mm/yyyy) of the continously rolled futures from Tables 2 and 4 in the paper. Due to copyright sharing issues we are not able to share the datasets but we do include the trained models in  `src/generated_data`.
 
 ![Alt Text](https://media.giphy.com/media/hMvcLdbpVqRRNCwPsj/giphy.gif)
 
