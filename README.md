@@ -31,4 +31,11 @@ All training results will be saved to *generated_data/{}/seed=i* with {} being t
 ## Generating Scenarios
 
 Once a model has been trained the parser in *evaluate_hierarchical_gan.py* can be modified to load the trained model and generate scenarios via the function generate_series_hierarchical_gan.
-"# Hierarchical-SigCWGAN" 
+
+## Replicating results from the paper
+
+The data used in the first experiment are the closing prices from $03/05/2000$ to $07/05/2021$ (dd/mm/yyyy) of the continously rolled futures from Tables 2 and 4 in the paper. Due to copyright sharing issues we are not able to share the datasets but we do include the trained models in  **src/generated_data**.
+
+![Alt Text](https://media.giphy.com/media/hMvcLdbpVqRRNCwPsj/giphy.gif)
+
+Enjoy!
