@@ -8,7 +8,7 @@ import torch
 
 
 from src.lib.algos.tree_clustering import get_clusters_from_dataset
-from src.lib.data import get_data_sigcwgan,rolling_window
+from src.lib.data import get_data_sigcwgan,rolling_window, rolling_window_non_overlapping, get_rawandpreprocessed_data
 from src.lib.algos.sigcwgan_files.sigcwgan import calibrate_sigw1_metric,sigcwgan_loss,sample_sig_fake
 from src.lib.algos.hierarchical_gan_files.hierarchical_gan import HierarchicalGAN
 from src.lib.hyperparameters_hierarchicalgan import Clustering_Hierarchical_GAN_CONFIGS,Base_SIGCWGAN_CONFIGS,CrossDim_SIGCWGAN_CONFIGS
@@ -20,7 +20,8 @@ from src.lib.base import is_multivariate
 from src.lib.plot import plot_summary, compare_cross_corr
 from src.lib.evaluate_utils import rolling_window_base_dim,\
     compute_predictive_score,compute_test_metrics, sample_sig_fake_hiergan, returns_to_prices
-from src.lib.test_metrics import test
+from src.lib.discriminative_score import discriminative_score
+
 
 def get_clust_hier_gan_config(dataset):
     """ Get the algorithms parameters. """
@@ -308,15 +309,24 @@ def evaluate_generator(model_name, seed, experiment_dir, dataset, use_cuda=True)
     G = SimpleGenerator(dim * p, dim, 3 * (50,), dim).to(device)
     G.load_state_dict(G_weights)
 
-    # ----------------------------------------------
-    # Compute the signature MMD
-    # ----------------------------------------------
-    with torch.no_grad():
-        x_fake = G.sample(x_past.shape[0]+3,x_past[-1].unsqueeze(dim=0))
+    pipeline, x_real_raw, x_real = get_rawandpreprocessed_data(dataset)
+    real_data = rolling_window_non_overlapping(x_real_raw[0], 25)
 
-    x_fake = rolling_window(x_fake,x_lag = x_past.shape[1], add_batch_dim=False)
-    MMD_test = test(x_past,x_fake,order=2,confidence_level=0.99)
-    experiment_summary['MMD Signature test'] = MMD_test
+    # Generate as many scenarios with the SigCWGAN
+    gen_data = G.sample(25, real_data[:,:p]).detach().numpy()
+    gen_data = pipeline.inverse_transform(torch.Tensor(gen_data))
+    # gen_data = rolling_window_non_overlapping(torch.Tensor(gen_data[0]), 25)
+
+    real_train_data = real_data[:200]
+    real_test_data = real_data[200:]
+    gen_train_data = gen_data[:200]
+    gen_test_data = gen_data[200:]
+
+    # ----------------------------------------------
+    # Compute discriminative score
+    # ----------------------------------------------
+    disc_score = discriminative_score(real_train_data, gen_train_data,real_test_data, gen_test_data)
+    experiment_summary['discriminative_score'] = disc_score[0]
 
     # ----------------------------------------------
     # Compute predictive score - TSTR (train on synthetic, test on real)
@@ -406,17 +416,25 @@ def evaluate_hierarchical_generator(model_name, seed, experiment_dir, dataset, u
     hier_gan_config.experiment_dir='../data/clustering'
     HierGAN = HierarchicalGAN(hier_gan_config)
 
-    # ----------------------------------------------
-    # Compute the signature MMD
-    # ----------------------------------------------
-    with torch.no_grad():
-        x_fake = sample_hierarchical_gan(HierGAN=HierGAN,experiment_path=experiment_dir,
-                                         dataset=dataset,days_to_generate=x_past.shape[0]+3,x_past=x_past[-1].unsqueeze(dim=0))
+    pipeline, x_real_raw, x_real = get_rawandpreprocessed_data(dataset)
+    real_data = rolling_window_non_overlapping(x_real_raw[0], 25)
 
-    x_fake = rolling_window(torch.from_numpy(x_fake),x_lag = x_past.shape[1], add_batch_dim=False)
-    MMD_test = test(x_past,x_fake,order=2,confidence_level=0.99)
-    experiment_summary['MMD Signature test'] = MMD_test
 
+    # Generate one scenario of the same size as x_real_raw
+    gen_data = sample_hierarchical_gan(HierGAN=HierGAN,experiment_path=experiment_dir,
+                                       dataset=dataset,days_to_generate=25,x_past=real_data[:,:p])
+    gen_data = pipeline.inverse_transform(torch.Tensor(gen_data))
+
+    real_train_data = real_data[:200]
+    real_test_data = real_data[200:]
+    gen_train_data = gen_data[:200]
+    gen_test_data = gen_data[200:]
+
+    # ----------------------------------------------
+    # Compute discriminative score
+    # ----------------------------------------------
+    disc_score = discriminative_score(real_train_data, gen_train_data,real_test_data, gen_test_data)
+    experiment_summary['discriminative_score'] = disc_score[0]
 
     # ----------------------------------------------
     # Compute predictive score - TSTR (train on synthetic, test on real)

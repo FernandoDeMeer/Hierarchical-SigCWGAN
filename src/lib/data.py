@@ -45,6 +45,11 @@ def rolling_window(x, x_lag, add_batch_dim=True):
         x = x[None, ...]
     return torch.cat([x[:, t:t + x_lag] for t in range(x.shape[1] - x_lag)], dim=0)
 
+def rolling_window_non_overlapping(x, x_lag, add_batch_dim = True):
+    if add_batch_dim:
+        x = x[None, ...]
+    return torch.cat([x[:, x_lag*t: x_lag*(t+1)] for t in range(int(x.shape[1] / x_lag))], dim=0)
+
 def rolling_window_crossdim(x, base_dims, target_dims,p, q ):
     rolling_windows = rolling_window(x=x,x_lag=p+q, add_batch_dim= False)
     x_input = rolling_windows[:,:p,np.concatenate((base_dims,target_dims))]
