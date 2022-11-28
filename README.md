@@ -3,6 +3,10 @@
 
 This repository is an implementation of the [Hierarchical (Sig-Wasserstein) GAN] algorithm for large dimensional Time Series Generation.
 
+Link to the paper: https://doi.org/10.3905/jfds.2022.1.109 
+
+This codebase is based on work from COST Action 19130, supported by COST (European Cooperation in Science and Technology; www.cost.eu). We also thank an anonymous reviewer for useful comments.
+
 ## Installation
  There are two possible installation setups:
 
